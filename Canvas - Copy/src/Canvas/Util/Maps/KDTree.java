@@ -1,4 +1,4 @@
-package Canvas.Util;
+package Canvas.Util.Maps;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -9,8 +9,24 @@ import java.util.function.Consumer;
 import Canvas.Pathing.RRT.Node;
 import Canvas.Shapes.PolyShape;
 import Canvas.Shapes.VisualJ;
+import Canvas.Util.DrawingAccessable;
 
-public class KDTree<T extends Point> {
+public class KDTree<T extends Point> implements PointBase<T>{
+
+    private static final double EPSILON = 1e-8;
+
+    private boolean almostEqual(double a, double b) {
+        return Math.abs(a - b) < EPSILON;
+    }
+    
+    private boolean lessThan(double a, double b) {
+        return a < b - EPSILON;
+    }
+    
+    private boolean greaterThan(double a, double b) {
+        return a > b + EPSILON;
+    }
+
     public class KDNode {
         T point;
         KDNode left, right;
@@ -28,8 +44,8 @@ public class KDTree<T extends Point> {
 
     private KDNode root;
 
-    public KDNode getRoot(){
-        return root;
+    public T getRoot(){
+        return root.point;
     }
 
     public void addAll(List<T> list){
@@ -79,7 +95,7 @@ public class KDTree<T extends Point> {
             return null;
         }
 
-        if (node.point.equals(point)) {
+        if (almostEqual(node.point.getX(), point.getX()) && almostEqual(node.point.getY(), point.getY())) {
             // Node found, remove it
             if (node.right != null) {
                 // Find the minimum node in the right subtree
@@ -144,7 +160,7 @@ public class KDTree<T extends Point> {
             return null;
         }
 
-        if (node.point.equals(target)) {
+        if (almostEqual(node.point.getX(), target.getX()) && almostEqual(node.point.getY(), target.getY())) {
             return node.point; // Target found
         }
 
@@ -161,6 +177,11 @@ public class KDTree<T extends Point> {
                 return search(node.right, target, !vertical);
             }
         }
+    }
+
+    @Override
+    public T findNearest(T target) {
+        return findKNearest(target, 1).get(0);
     }
 
     // Find the k nearest KDNodes to the target point

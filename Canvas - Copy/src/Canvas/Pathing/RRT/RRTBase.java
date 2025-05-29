@@ -8,8 +8,10 @@ import java.util.List;
 import Canvas.Pathing.RRT.RRTHelperBase.Field;
 import Canvas.Shapes.Line;
 import Canvas.Shapes.PolyShape;
-import Canvas.Util.KDTree;
+import Canvas.Util.Profile;
 import Canvas.Util.Vector2D;
+import Canvas.Util.Maps.KDTree;
+import Canvas.Util.Maps.PointBase;
 
 public interface RRTBase {
 
@@ -43,7 +45,7 @@ public interface RRTBase {
 
     public List<Obstacle> getObstacles();
 
-    public default KDTree<Obstacle> getKDTreeObstacles(){
+    public default PointBase<Obstacle> getKDTreeObstacles(){
         return null;
     }
 
@@ -65,7 +67,7 @@ public interface RRTBase {
         Node activeNode = new Node(nodePathEnd);
         PolyShape poly = new PolyShape(0, 0);
         int i = 0;
-        while(activeNode.getParent() != null && i <100){
+        while(activeNode.getParent() != null && i <1000){
             poly.add(
                 new Line(activeNode.x + Math.min(activeNode.getParent().x-activeNode.x,0), activeNode.y + Math.min(activeNode.getParent().y-activeNode.y,0)
                 , List.of(Vector2D.of(0,0)
@@ -73,6 +75,23 @@ public interface RRTBase {
                 , Color.GREEN, 3)
             );
             activeNode = activeNode.getParent();
+            i++;
+        }
+        return poly;
+    }
+
+    public default PolyShape getPath(List<Vector2D> nodes){
+        Vector2D activeNode = nodes.get(0);
+        PolyShape poly = new PolyShape(0, 0);
+        int i = 0;
+        while(nodes.get(i+1) != null && i <100){
+            poly.add(
+                new Line(activeNode.x + Math.min(nodes.get(i+1).x-activeNode.x,0), activeNode.y + Math.min(nodes.get(i+1).y-activeNode.y,0)
+                , List.of(Vector2D.of(0,0)
+                ,Vector2D.of(nodes.get(i+1).x-activeNode.x,nodes.get(i+1).y-activeNode.y))
+                , Color.RED, 3)
+            );
+            activeNode = nodes.get(i+1);
             i++;
         }
         return poly;
@@ -106,24 +125,16 @@ public interface RRTBase {
 
     public default boolean collidesObstacle(Node point) {
         if (point.getParent() == null){
-            System.out.println("INCORRECT USE OF OBSTACLES, CHECK RRTHelperBASE 114");
+            System.out.println("INCORRECT USE OF OBSTACLES, CHECK RRTHelperBASE");
             return true;
         }
 
         if (getKDTreeObstacles().getRoot() == null){
             return false;
         }
-
-        double[] obstacleDimensions = new double[]{0,0};
-        getKDTreeObstacles().traverseNodes(obstacle -> {
-            if (obstacle.getWidth() > obstacleDimensions[0]){
-                obstacleDimensions[0] = obstacle.getWidth();
-            }
-            if (obstacle.getHeight() > obstacleDimensions[1]){
-                obstacleDimensions[1] = obstacle.getHeight();
-            }
-        });
         
+        double[] obstacleDimensions = obstacleMaxBounds();
+
         Vector2D upperBound;
         Vector2D lowerBound;
         if (point.x > point.getParent().x){
@@ -152,12 +163,17 @@ public interface RRTBase {
                 return true;
             }
         }
+        
         return false;
     }
 
     public default boolean collidesObstacle(Node one, Node two) {
         return collidesObstacle(new Node(one, two));
     }
+
+    public double[] obstacleMaxBounds();
+
+    public void obstacleMaxBoundsCalculation();
 
     public default List<Obstacle> simplifyObstacles(List<Obstacle> obstacles){
         if (obstacles.size() == 0){

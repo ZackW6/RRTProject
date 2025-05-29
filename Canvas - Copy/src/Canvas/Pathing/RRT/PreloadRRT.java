@@ -10,8 +10,8 @@ import Canvas.Pathing.RRT.RRTHelperBase.Field;
 import Canvas.Shapes.Line;
 import Canvas.Shapes.PolyShape;
 import Canvas.Shapes.VisualJ;
-import Canvas.Util.KDTree;
 import Canvas.Util.Vector2D;
+import Canvas.Util.Maps.KDTree;
 
 public class PreloadRRT implements RRTBase{
 
@@ -117,6 +117,7 @@ public class PreloadRRT implements RRTBase{
     }
 
     public void process(){
+        obstacleMaxBoundsCalculation();
         // if (paths.size()>0){
         //     drawing.remove(paths.get(0));
         //     paths.clear();
@@ -557,5 +558,25 @@ public class PreloadRRT implements RRTBase{
     @Override
     public void prune(int max) {
         
+    }
+
+
+    double[] maxBounds = new double[]{0,0};
+
+    public double[] obstacleMaxBounds() {
+        return maxBounds;
+    }
+
+    public void obstacleMaxBoundsCalculation() {
+        double[] obstacleDimensions = new double[]{0,0};
+        getKDTreeObstacles().traverseNodes(obstacle -> {
+            if (obstacle.getWidth() > obstacleDimensions[0]){
+                obstacleDimensions[0] = obstacle.getWidth();
+            }
+            if (obstacle.getHeight() > obstacleDimensions[1]){
+                obstacleDimensions[1] = obstacle.getHeight();
+            }
+        });
+        maxBounds = obstacleDimensions;
     }
 }

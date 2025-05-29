@@ -10,7 +10,7 @@ import Canvas.Util.Vector2D;
 
 public class PolyShape extends Obj{
 
-    private ArrayList<Obj> shapes = new ArrayList<>();
+    public ArrayList<Obj> shapes = new ArrayList<>();
 
     /**
      * This class takes in a list of other shapes, and uses their coords to orient the other shapes around

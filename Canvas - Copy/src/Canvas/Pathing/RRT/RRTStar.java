@@ -14,10 +14,10 @@ import java.util.function.ToDoubleFunction;
 import Canvas.Shapes.Circle;
 import Canvas.Shapes.PolyShape;
 import Canvas.Shapes.VisualJ;
-import Canvas.Util.KDTree.KDNode;
-import Canvas.Util.KDTree;
 import Canvas.Util.Profile;
 import Canvas.Util.Vector2D;
+import Canvas.Util.Maps.KDTree;
+import Canvas.Util.Maps.KDTree.KDNode;
 
 public class RRTStar extends RRTHelperBase {
 
@@ -53,11 +53,10 @@ public class RRTStar extends RRTHelperBase {
                 double potentialCost = nearbyNode.getCost() + newPoint.distanceTo(nearbyNode);
 
                 if (potentialCost < currentCost && !collidesObstacle(newPoint, nearbyNode)) {
-                    newPoint.setParent(nearbyNode);
                     currentCost = potentialCost;
                     gotParent = true;
                     confirmedNodes.add(nearbyNode);
-                    newPoint.cost = potentialCost;
+                    newPoint.setParent(nearbyNode, potentialCost);
                 }
             }
 
@@ -68,8 +67,8 @@ public class RRTStar extends RRTHelperBase {
             nodes.add(newPoint);
             
             for (Node node : confirmedNodes) {
-                if (newPoint.cost + newPoint.distanceTo(node) < node.cost) {
-                    node.setParent(newPoint);
+                if (newPoint.getStoredCost() + newPoint.distanceTo(node) < node.getStoredCost()) {
+                    node.setParent(newPoint, newPoint.getStoredCost() + newPoint.distanceTo(node));
                 }
             }
             
@@ -77,10 +76,9 @@ public class RRTStar extends RRTHelperBase {
 
             if (!collidesObstacle(goalSight)){
 
-                double potentialCost = newPoint.cost + newPoint.distanceTo(goal);
+                double potentialCost = newPoint.getStoredCost() + newPoint.distanceTo(goal);
                 if (potentialCost < bestCost){
-                    goal.setParent(newPoint);
-                    goal.cost = potentialCost;
+                    goal.setParent(newPoint, potentialCost);
                 }
             }
         }
@@ -111,24 +109,6 @@ public class RRTStar extends RRTHelperBase {
         drawing.moveIndex(start.getCircle(),drawing.getArray().size()-2);
         // capNodeCount(1000);
         prune(10000);
-    }
-
-    protected List<Node> organizeByCost(List<Node> list, Node extraNode){
-        ArrayList<Node> sorted = new ArrayList<>(list);
-        sorted.sort(new Comparator<Node>() {
-            @Override
-            public int compare(Node item1, Node item2) {
-                if (extraNode == null){
-                    return Double.compare(item1.getCost(), item2.getCost());
-                }
-                return Double.compare(item1.getCost() + item1.distanceTo(extraNode), item2.getCost() + item2.distanceTo(extraNode));
-            }
-        });
-        return sorted;
-    }
-
-    protected List<Node> organizeByCost(List<Node> list){
-        return organizeByCost(list, null);
     }
 
     public boolean isFinished() {
@@ -168,108 +148,159 @@ public class RRTStar extends RRTHelperBase {
     }
 
     @Override
-    public  void setStart(Vector2D start){
-        // LinkedList<Node> keepNodes = new LinkedList<>(nodes.toList());
-        // keepNodes.remove(this.start);
-        goal.setParent(null);
-        ArrayList<Node> goodNodes = new ArrayList<>();
-        for (Node node : nodes.toList()){
-            if (!node.equals(this.start) && !collidesObstacle(node, this.start)){
-                node.setParent(this.start);
-                goodNodes.add(node);
+    public void setStart(Vector2D start) {
+        this.start.getCost();
+        this.start.setPosition(start.x, start.y);
+        // Node newParent = new Node(this.start);
+        // nodes.add(newParent);
+        // newParent.getCost();
+        // newParent.getCircle().setColor(Color.RED);
+        // drawing.add(newParent.getCircle());
+        // this.start.abandon();
+        
+        // for (Node child : children){
+        //     this.start.removeChild(child);
+        //     killAll(child);
+        //     drawing.remove(child.getCircle());
+        //     nodes.remove(child);
+        // }
+        ArrayList<Node> children = new ArrayList<>();
+        ArrayList<Node> toFix = new ArrayList<>();
+        for (Node nearbyNode : nodes.toList()) {
+            if (!nearbyNode.equals(this.start) && !collidesObstacle(this.start, nearbyNode)){
+                children.add(nearbyNode);
+                nearbyNode.setParent(this.start);
+            }else{
+                nearbyNode.setParent(null);
+                toFix.add(nearbyNode);
             }
         }
-        nodes.clear(drawing);
+        reRoute(children, toFix, -1);
+    }
 
-        this.start.setPosition(start.x, start.y);
-
-        drawing.add(this.start.getCircle());
-        for (Node node : goodNodes){
-            drawing.add(node.getObj());
+    public void reRoute(List<Node> children, List<Node> toFix, int lastAmount){
+        
+        int newAmount = toFix.size();
+        if (lastAmount == newAmount){
+            for (Node n : toFix){
+                if (n.equals(start)){
+                    continue;
+                }
+                drawing.remove(n.getObj());
+                nodes.remove(n);
+            }
+            return;
         }
-        nodes.add(this.start);
-        nodes.addAll(goodNodes);
+        if (children.size() == 0){
+            return;
+        }
+        
+        HashMap<Node, Integer> newChildren = new HashMap<>();
+        for (Node child : children){
+            double childCost = child.getCost();
+            for (Node near : getNearbyNodes(child)){
 
-        // nodes.addAll(keepNodes);
+                if (near.equals(child) || collidesObstacle(child, near)){
+                    continue;
+                }
+
+                if (near.getParent() == null){
+                    newChildren.put(near, 0);
+                }
+                
+                toFix.remove(near);
+                if (childCost + near.distanceTo(child) < near.getStoredCost()){
+                    near.setParent(child);
+                }else if(near.distanceTo(child) + (near.getStoredCost() == Double.MAX_VALUE ? childCost : Double.MAX_VALUE) < childCost){
+                    child.setParent(near);
+                }
+                
+            }
+        }
+        
+        reRoute(List.copyOf(newChildren.keySet()), toFix, newAmount);
+    }
+
+    // @Override
+    // public  void setStart(Vector2D start){
+    //     // LinkedList<Node> keepNodes = new LinkedList<>(nodes.toList());
+    //     // keepNodes.remove(this.start);
+    //     goal.setParent(null);
+    //     ArrayList<Node> goodNodes = new ArrayList<>();
+    //     for (Node node : nodes.toList()){
+    //         if (!node.equals(this.start) && !collidesObstacle(node, this.start)){
+    //             node.setParent(this.start);
+    //             goodNodes.add(node);
+    //         }
+    //     }
+    //     nodes.clear(drawing);
+
+    //     this.start.setPosition(start.x, start.y);
+
+    //     drawing.add(this.start.getCircle());
+    //     for (Node node : goodNodes){
+    //         drawing.add(node.getObj());
+    //     }
+    //     nodes.add(this.start);
+    //     nodes.addAll(goodNodes);
+
+    //     // nodes.addAll(keepNodes);
 
         
 
-        // Map<Node, List<Node>> nearbyNodesCache = new HashMap<>();
+    //     // Map<Node, List<Node>> nearbyNodesCache = new HashMap<>();
 
-        // if (collidesObstacle(this.start, this.start)){
-        //     return;
-        // }
+    //     // if (collidesObstacle(this.start, this.start)){
+    //     //     return;
+    //     // }
 
-        // for (Node node : keepNodes){
+    //     // for (Node node : keepNodes){
             
-        //     if (!node.equals(this.start) && node.getParent().equals(this.start) && collidesObstacle(node)){
-        //         double currentCost = Double.POSITIVE_INFINITY;
+    //     //     if (!node.equals(this.start) && node.getParent().equals(this.start) && collidesObstacle(node)){
+    //     //         double currentCost = Double.POSITIVE_INFINITY;
 
-        //         List<Node> nearbyNodes = nearbyNodesCache.computeIfAbsent(node, this::getNearbyNodes);
+    //     //         List<Node> nearbyNodes = nearbyNodesCache.computeIfAbsent(node, this::getNearbyNodes);
 
-        //         for (Node potentialParent : nearbyNodes){
+    //     //         for (Node potentialParent : nearbyNodes){
                     
-        //             double potentialCost = potentialParent.getCost() + potentialParent.distanceTo(node);
-        //             if (potentialCost > currentCost || potentialParent.isDescendedOf(node)){
-        //                 continue;
-        //             }
+    //     //             double potentialCost = potentialParent.getCost() + potentialParent.distanceTo(node);
+    //     //             if (potentialCost > currentCost || potentialParent.isDescendedOf(node)){
+    //     //                 continue;
+    //     //             }
 
-        //             if (!collidesObstacle(node, potentialParent)){
+    //     //             if (!collidesObstacle(node, potentialParent)){
                         
-        //                 node.setParent(potentialParent);
-        //                 currentCost = potentialCost;
+    //     //                 node.setParent(potentialParent);
+    //     //                 currentCost = potentialCost;
                         
-        //             }
+    //     //             }
                     
-        //         }
-        //     }
-        // }
+    //     //         }
+    //     //     }
+    //     // }
 
-        // for (Node node : getNearbyNodes(this.start,calculateRadius() * 3)){
-        //     if (!node.equals(this.start) && !collidesObstacle(node, this.start)){
-        //         node.setParent(this.start);
-        //     }
-        // }
+    //     // for (Node node : getNearbyNodes(this.start,calculateRadius() * 3)){
+    //     //     if (!node.equals(this.start) && !collidesObstacle(node, this.start)){
+    //     //         node.setParent(this.start);
+    //     //     }
+    //     // }
 
-        if (goal.getParent() == null){
-            bestCost = Double.POSITIVE_INFINITY;
-            return;
-        }
-        if (paths.size()>0){
-            drawing.remove(paths.get(0));
-            paths.clear();
-        }
+    //     if (goal.getParent() == null){
+    //         bestCost = Double.POSITIVE_INFINITY;
+    //         return;
+    //     }
+    //     if (paths.size()>0){
+    //         drawing.remove(paths.get(0));
+    //         paths.clear();
+    //     }
 
-        paths.add(getPath(this.goal));
-        drawing.add(paths.get(0));
-        bestCost = goal.getCost();
-    }
+    //     paths.add(getPath(this.goal));
+    //     drawing.add(paths.get(0));
+    //     bestCost = goal.getCost();
+    // }
 
     protected double getBestCost(){
         return bestCost;
-    }
-
-    
-    /**
-     * with no node applicable returns null
-     * @param node
-     * @param list
-     * @return
-     */
-    protected Node findBestParent(Node node, List<Node> list){
-        double currentCost = Double.POSITIVE_INFINITY;
-        Node bestParent = null;
-        for (Node nearbyNode : list) {
-            
-            double potentialCost = nearbyNode.getCost() + node.distanceTo(nearbyNode);
-
-            if (potentialCost < currentCost && !collidesObstacle(node, nearbyNode)) {
-                bestParent = nearbyNode;
-                currentCost = potentialCost;
-                node.cost = potentialCost;
-            }
-        }
-        return bestParent;
     }
 
     @Override
@@ -277,7 +308,7 @@ public class RRTStar extends RRTHelperBase {
         List<Node> list = nodes.toList();
         if (list.size() > max) {
             // Sort nodes by total cost (cost to reach the node + estimated cost to goal)
-            list.sort(Comparator.comparingDouble(node -> node.getCost() + node.distanceTo(goal)));
+            list.sort(Comparator.comparingDouble(node -> node.getStoredCost() + node.distanceTo(goal)));
     
             // Prune nodes exceeding the limit
             while (list.size() > max) {

@@ -7,6 +7,7 @@ import Canvas.Inputs.MouseInput.MouseInputs;
 import Canvas.Inputs.MouseInput.MouseSide;
 import Canvas.Pathing.RRT.BetterPreloadRRT;
 import Canvas.Pathing.RRT.InformedRRTStar;
+import Canvas.Pathing.RRT.MomentumRRT;
 import Canvas.Pathing.RRT.Obstacle;
 import Canvas.Pathing.RRT.RRT;
 import Canvas.Pathing.RRT.RRTBase;
@@ -88,32 +89,24 @@ public class App {
         timedCommand1.schedule();
 
         keyboard.keyPressed("i").onTrue(Commands.runOnce(()->{
-            rrt.scheduleObstacles(fileParser.loadSquares(rrt, "AvoidStage"));
+            rrtContainer.contained.scheduleObstacles(fileParser.loadSquares(rrtContainer.contained, "AvoidStage"));
         }));
 
         keyboard.keyPressed("k").onTrue(Commands.runOnce(()->{
-            rrt.scheduleObstacles(fileParser.loadSquares(rrt, "navgrid"));
+            rrtContainer.contained.scheduleObstacles(fileParser.loadSquares(rrtContainer.contained, "navgrid"));
         }));
 
         keyboard.keyPressed("l").onTrue(Commands.runOnce(()->{
-            rrt.scheduleObstacles(fileParser.loadSquares(rrt, "note3Correct"));
+            rrtContainer.contained.scheduleObstacles(fileParser.loadSquares(rrtContainer.contained, "note3Correct"));
         }));
 
         keyboard.keyPressed("j").onTrue(Commands.runOnce(()->{
-            rrt.scheduleObstacles(fileParser.loadSquares(rrt, "SmallGridSizes"));
+            rrtContainer.contained.scheduleObstacles(fileParser.loadSquares(rrtContainer.contained, "SmallGridSizes"));
         }));
 
         keyboard.keyPressed("a").onTrue(Commands.runOnce(()->{
             Vector2D point = vis.screenRelativePoint(mouse.getMouseCoords());
             rrtContainer.contained.addObstacles(List.of(new Obstacle(point.x, point.y, 30 ,30, true)));
-        }));
-
-        keyboard.keyPressed("i").onTrue(Commands.runOnce(()->{
-            rrtContainer.contained.scheduleObstacles(fileParser.loadSquares(rrtContainer.contained, "AvoidStage"));
-        }));
-
-        keyboard.keyPressed("i").onTrue(Commands.runOnce(()->{
-            rrtContainer.contained.scheduleObstacles(fileParser.loadSquares(rrtContainer.contained, "SmallGridSizes"));
         }));
 
         keyboard.keyPressed("s").onTrue(Commands.runOnce(()->{
@@ -227,6 +220,9 @@ public class App {
                 rrtContainer.contained = new BetterPreloadRRT(vis, new Field(0, 0, 1700, 900), new ArrayList<>());
                 break;
             case 4:
+                rrtContainer.contained = new MomentumRRT(vis, new Field(0, 0, 1700, 900));
+                break;
+            case 5:
                 state = 0;
                 rrtContainer.contained = new RRT(vis, new Field(0, 0, 1700, 900));
                 break;

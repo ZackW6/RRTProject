@@ -75,7 +75,9 @@ public abstract class CommandBase {
             System.out.println("Failed");
             e.printStackTrace();
         }
-        
+        for (Runnable run : afterRuns){
+            run.run();
+        }
         finallyDo();
     }
 

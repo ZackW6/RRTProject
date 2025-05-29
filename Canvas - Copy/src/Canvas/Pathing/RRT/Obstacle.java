@@ -7,8 +7,9 @@ import Canvas.Shapes.Obj;
 import Canvas.Shapes.Rectangle;
 import Canvas.Shapes.UserButtons.ClickableButton;
 import Canvas.Util.DrawingAccessable;
-import Canvas.Util.Point;
+import Canvas.Util.Profile;
 import Canvas.Util.Vector2D;
+import Canvas.Util.Maps.Point;
 
 public class Obstacle extends Rectangle implements ClickableButton, Point{
 
@@ -82,6 +83,7 @@ public class Obstacle extends Rectangle implements ClickableButton, Point{
 
     // Check if a line segment intersects a rectangle
     public boolean doesLineIntersectRectangle(Vector2D p1, Vector2D p2, double xmin, double ymin, double xmax, double ymax) {
+        
         Vector2D bottomLeft = new Vector2D(xmin, ymin);
         Vector2D bottomRight = new Vector2D(xmax, ymin);
         Vector2D topLeft = new Vector2D(xmin, ymax);

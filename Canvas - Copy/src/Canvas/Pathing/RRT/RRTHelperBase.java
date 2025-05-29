@@ -1,6 +1,7 @@
 package Canvas.Pathing.RRT;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -12,14 +13,16 @@ import Canvas.Shapes.PolyShape;
 import Canvas.Shapes.Rectangle;
 import Canvas.Shapes.Square;
 import Canvas.Shapes.VisualJ;
-import Canvas.Util.KDTree;
 import Canvas.Util.Vector2D;
+import Canvas.Util.Maps.KDTree;
+import Canvas.Util.Maps.PointBase;
+import Canvas.Util.Maps.PointMap;
 
 public abstract class RRTHelperBase implements RRTBase{
-    protected KDTree<Node> nodes = new KDTree<>();
+    protected PointBase<Node> nodes = new PointMap<>();
     // protected ArrayList<Node> nodes = new ArrayList<>();
 
-    protected KDTree<Obstacle> obstacles = new KDTree<Obstacle>();
+    protected PointBase<Obstacle> obstacles = new KDTree<Obstacle>();
 
     protected Node start = new Node(0, 0);
 
@@ -35,7 +38,7 @@ public abstract class RRTHelperBase implements RRTBase{
 
     protected VisualJ vis;
 
-    private double bias = 0;
+    protected double bias = 0;
     
     private Runnable[] initActions = new Runnable[3];
     /**
@@ -61,6 +64,7 @@ public abstract class RRTHelperBase implements RRTBase{
 
     @Override
     public void process(){
+        obstacleMaxBoundsCalculation();
         for (int i = 0; i < initActions.length; i++){
             initActions[i].run();
             initActions[i] = ()->{};
@@ -76,7 +80,7 @@ public abstract class RRTHelperBase implements RRTBase{
         Node activeNode = new Node(nodePathEnd);
         PolyShape poly = new PolyShape(0, 0);
         int i = 0;
-        while(activeNode.getParent() != null && i <1000){
+        while(activeNode.getParent() != null && i < 10000){
             poly.add(
                 new Line(activeNode.x + Math.min(activeNode.getParent().x-activeNode.x,0), activeNode.y + Math.min(activeNode.getParent().y-activeNode.y,0)
                 , List.of(Vector2D.of(0,0)
@@ -104,7 +108,11 @@ public abstract class RRTHelperBase implements RRTBase{
         return nodes.findKNearest(newPoint, 1).get(0);
     }
 
-    protected Node getNewPoint( Node random, Node nearest) {
+    protected List<Node> getNearbyNodes(Node newPoint, int k){
+        return nodes.findKNearest(newPoint, k);
+    }
+
+    protected Node getNewPoint(Node random, Node nearest) {
         double theta = Math.atan2(random.y - nearest.y, random.x - nearest.x);
         double newX = (nearest.x + maxStepSize * Math.cos(theta));
         double newY = (nearest.y + maxStepSize * Math.sin(theta));
@@ -151,7 +159,7 @@ public abstract class RRTHelperBase implements RRTBase{
      * forces a full reset of all paths, use only for full field changes
      * @param obstacles
      */
-    public  void setObstacles(List<Obstacle> obstacles){
+    public void setObstacles(List<Obstacle> obstacles){
         nodes.clear(drawing);
 
         nodes.add(this.start);
@@ -160,7 +168,6 @@ public abstract class RRTHelperBase implements RRTBase{
         this.obstacles.clear(drawing);
         this.obstacles.addAll(obstacles);
         drawing.getArray().addAll(obstacles);
-        
     }
 
     public  void addObstacles(List<Obstacle> obstacles){
@@ -171,7 +178,26 @@ public abstract class RRTHelperBase implements RRTBase{
         
     }
 
-    public  void setStart(Vector2D start){
+    double[] maxBounds = new double[]{0,0};
+
+    public double[] obstacleMaxBounds() {
+        return maxBounds;
+    }
+
+    public void obstacleMaxBoundsCalculation() {
+        double[] obstacleDimensions = new double[]{0,0};
+        getKDTreeObstacles().traverseNodes(obstacle -> {
+            if (obstacle.getWidth() > obstacleDimensions[0]){
+                obstacleDimensions[0] = obstacle.getWidth();
+            }
+            if (obstacle.getHeight() > obstacleDimensions[1]){
+                obstacleDimensions[1] = obstacle.getHeight();
+            }
+        });
+        maxBounds = obstacleDimensions;
+    }
+
+    public void setStart(Vector2D start){
 
         nodes.clear(drawing);
 
@@ -247,7 +273,7 @@ public abstract class RRTHelperBase implements RRTBase{
     }
 
     @Override
-    public KDTree<Obstacle> getKDTreeObstacles(){
+    public PointBase<Obstacle> getKDTreeObstacles(){
         return obstacles;
     }
     

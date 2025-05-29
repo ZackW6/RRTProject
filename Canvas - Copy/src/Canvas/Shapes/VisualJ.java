@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public class VisualJ extends JFrame{
 
     private Profile profile = new Profile();
-    public ArrayList<Obj> shapes=new ArrayList<Obj>();
+    public ArrayList<Obj> shapes = new ArrayList<Obj>();
     //shapes encompasses everything that will be included in the graphics project
     public int WIDTH;
     public int HEIGHT;

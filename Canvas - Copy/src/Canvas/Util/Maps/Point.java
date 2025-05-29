@@ -1,4 +1,4 @@
-package Canvas.Util;
+package Canvas.Util.Maps;
 
 public interface Point {
     public double getX();

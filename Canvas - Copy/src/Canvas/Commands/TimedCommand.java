@@ -7,7 +7,7 @@ import Canvas.Util.Profile;
  */
 public class TimedCommand extends Command{
 
-    private final double waitTime;
+    private double waitTime;
     public TimedCommand(Runnable run, double timeMili){
         super(()->{
             Profile profile = new Profile();
@@ -30,6 +30,10 @@ public class TimedCommand extends Command{
 
     public double getTimer() {
         return waitTime;
+    }
+
+    public void setWaitTime(double time){
+        this.waitTime = time;
     }
     
 }

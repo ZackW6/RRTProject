@@ -56,7 +56,7 @@ public class RRT extends RRTHelperBase{
     public  void setGoal(Vector2D goal){
         bestCost = Double.POSITIVE_INFINITY;
         this.goal.setPosition(goal.x, goal.y);
-        for (Node node : getNearbyNodes(this.goal,100)){
+        for (Node node : getNearbyNodes(this.goal,100.0)){
             double potentialCost = node.getCost() + node.distanceTo(goal);
             if (potentialCost < bestCost && !collidesObstacle(node, this.goal)){
                 this.goal.setParent(node);

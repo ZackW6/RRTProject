@@ -1,5 +1,7 @@
 package Canvas.Util;
 
+import Canvas.Util.Maps.Point;
+
 public class Vector2D implements Comparable<Vector2D>, Point {
     public double x, y;
 

@@ -3,8 +3,8 @@ package Canvas.Pathing.RRT;
 import Canvas.Pathing.RRT.RRTHelperBase.Field;
 import Canvas.Shapes.PolyShape;
 import Canvas.Shapes.VisualJ;
-import Canvas.Util.KDTree;
 import Canvas.Util.Vector2D;
+import Canvas.Util.Maps.KDTree;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -204,7 +204,7 @@ public class BetterPreloadRRT implements RRTBase{
 
     @Override
     public void process() {
-        
+        obstacleMaxBoundsCalculation();
     }
 
     @Override
@@ -282,7 +282,6 @@ public class BetterPreloadRRT implements RRTBase{
         List<Node> workingNodes = findCornerNodesDynamic(obstacle);
         createdNodes.addAll(workingNodes);
         for (Node node : workingNodes){
-            node.setDynamic(true);
             nodes.put(node, new ArrayList<>());
             drawing.add(node.getCircle());
             for (Node potentialVis : nodes.keySet()){
@@ -515,6 +514,26 @@ public class BetterPreloadRRT implements RRTBase{
     @Override
     public void prune(int max) {
         
+    }
+
+
+    double[] maxBounds = new double[]{0,0};
+
+    public double[] obstacleMaxBounds() {
+        return maxBounds;
+    }
+
+    public void obstacleMaxBoundsCalculation() {
+        double[] obstacleDimensions = new double[]{0,0};
+        getKDTreeObstacles().traverseNodes(obstacle -> {
+            if (obstacle.getWidth() > obstacleDimensions[0]){
+                obstacleDimensions[0] = obstacle.getWidth();
+            }
+            if (obstacle.getHeight() > obstacleDimensions[1]){
+                obstacleDimensions[1] = obstacle.getHeight();
+            }
+        });
+        maxBounds = obstacleDimensions;
     }
     
 }

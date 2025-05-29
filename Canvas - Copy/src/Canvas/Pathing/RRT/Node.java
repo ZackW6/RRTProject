@@ -3,6 +3,7 @@ package Canvas.Pathing.RRT;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import Canvas.Shapes.Circle;
 import Canvas.Shapes.Line;
@@ -12,16 +13,22 @@ import Canvas.Util.Vector2D;
 
 public class Node extends Vector2D implements DrawingAccessable{
 
-    protected double cost = Double.POSITIVE_INFINITY;
-    private Node parent = null;
-
-    private boolean isDynamic = false;
+    private double cost = Double.POSITIVE_INFINITY;
+    protected Node parent = null;
 
     private Circle circle = new Circle(0, 0, 5, Color.BLUE, true);
+
+    public Node(double x, double y, Node parent, boolean child) {
+        super(x, y);
+        this.parent = parent;
+
+        circle.setPosition(x-circle.getWidth()/2,y-circle.getHeight()/2);
+    }
 
     public Node(double x, double y, Node parent) {
         super(x, y);
         this.parent = parent;
+
         circle.setPosition(x-circle.getWidth()/2,y-circle.getHeight()/2);
     }
 
@@ -39,6 +46,7 @@ public class Node extends Vector2D implements DrawingAccessable{
     public Node(Node place, Node parent){
         super(place.x, place.y);
         this.parent = parent;
+
         circle.setPosition(x-circle.getWidth()/2,y-circle.getHeight()/2);
     }
 
@@ -61,8 +69,19 @@ public class Node extends Vector2D implements DrawingAccessable{
         return parent;
     }
 
+    //TODO problem point likely
     public void setParent(Node parent){
+        if (parent != null){
+            setParent(parent, parent.getCost() + parent.distanceTo(this));
+            return;
+        }
         this.parent = parent;
+        cost = Double.MAX_VALUE;
+    }
+
+    public void setParent(Node parent, double cost){
+        this.parent = parent;
+        this.cost = cost;
     }
 
     public boolean isDescendedOf(Node possibleParent){
@@ -96,15 +115,6 @@ public class Node extends Vector2D implements DrawingAccessable{
     public Obj getObj() {
         return getCircle();
     }
-
-    public void setDynamic(boolean dynamic){
-        this.isDynamic = dynamic;
-    }
-
-    public boolean isDynamic(){
-        return isDynamic;
-    }
-
     /**
      * Much more accurate than taking cost directly, needs to be run
      * in certain cases the cost may have been calculated already which is
@@ -114,12 +124,24 @@ public class Node extends Vector2D implements DrawingAccessable{
         double cost = 0;
         Node temp = new Node(this);
 
+        int count = 0;
+
         while (temp.getParent() != null){
+            count++;
             cost += temp.distanceTo(temp.getParent());
             temp = temp.getParent();
+            if (count > 1000){
+                System.out.println("NOO");
+                cost = Double.MAX_VALUE;
+                break;
+            }
         }
         
         this.cost = cost;
+        return cost;
+    }
+
+    public double getStoredCost(){
         return cost;
     }
 }

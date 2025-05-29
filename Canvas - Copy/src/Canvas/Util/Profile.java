@@ -10,7 +10,6 @@ public class Profile {
     }
 
     public void stop(){
-        runs++;
         total += getTime();
     }
 
@@ -31,6 +30,10 @@ public class Profile {
     public void nanoStart(){
         runs++;
         startTime = System.nanoTime();
+    }
+
+    public void nanoStop(){
+        total += getNanoTime();
     }
 
     public long getNanoTime(){
