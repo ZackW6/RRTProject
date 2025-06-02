@@ -51,9 +51,9 @@ public interface RRTBase {
 
     public List<Node> getNodes();
 
-    public Vector2D getStart();
+    public Node getStart();
 
-    public Vector2D getGoal();
+    public Node getGoal();
 
     public double getMinimumDist();
 
@@ -158,7 +158,7 @@ public interface RRTBase {
         
         for (Obstacle obstacle : getKDTreeObstacles().findInRange(
             Vector2D.of(lowerBound.x - obstacleDimensions[0]
-            , lowerBound.y - obstacleDimensions[1]), Vector2D.of(upperBound.x+obstacleDimensions[0],upperBound.y+obstacleDimensions[1]))) {
+            , lowerBound.y - obstacleDimensions[1]), Vector2D.of(upperBound.x,upperBound.y))) {
             if (obstacle.didCollide(point, point.getParent())){
                 return true;
             }

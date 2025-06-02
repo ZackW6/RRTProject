@@ -204,6 +204,12 @@ public class BetterPreloadRRT implements RRTBase{
 
     @Override
     public void process() {
+        if (toBeStart.x != start.x || toBeStart.y != start.y){
+            setStart(toBeStart);
+        }
+        if (toBeGoal.x != goal.x || toBeGoal.y != goal.y){
+            setGoal(toBeGoal);
+        }
         obstacleMaxBoundsCalculation();
     }
 
@@ -212,14 +218,16 @@ public class BetterPreloadRRT implements RRTBase{
         setObstacles(obstacles);
     }
 
+    Node toBeStart = new Node(start);
     @Override
     public void scheduleStart(Vector2D start) {
-        setStart(start);
+        toBeStart.setPosition(start.x, start.y);
     }
 
+    Node toBeGoal = new Node(goal);
     @Override
     public void scheduleGoal(Vector2D goal) {
-        setGoal(goal);
+        toBeGoal.setPosition(goal.x, goal.y);
     }
 
     @Override
@@ -459,12 +467,12 @@ public class BetterPreloadRRT implements RRTBase{
     }
 
     @Override
-    public Vector2D getStart() {
+    public Node getStart() {
         return start;
     }
 
     @Override
-    public Vector2D getGoal() {
+    public Node getGoal() {
         return goal;
     }
 

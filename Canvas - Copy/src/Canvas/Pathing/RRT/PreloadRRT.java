@@ -496,12 +496,12 @@ public class PreloadRRT implements RRTBase{
     }
 
     @Override
-    public Vector2D getStart() {
+    public Node getStart() {
         return this.start;
     }
 
     @Override
-    public Vector2D getGoal() {
+    public Node getGoal() {
         return this.goal;
     }
 

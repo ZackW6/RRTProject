@@ -22,7 +22,7 @@ public abstract class RRTHelperBase implements RRTBase{
     protected PointBase<Node> nodes = new PointMap<>();
     // protected ArrayList<Node> nodes = new ArrayList<>();
 
-    protected PointBase<Obstacle> obstacles = new KDTree<Obstacle>();
+    protected PointBase<Obstacle> obstacles = new PointMap<>();
 
     protected Node start = new Node(0, 0);
 
@@ -40,7 +40,7 @@ public abstract class RRTHelperBase implements RRTBase{
 
     protected double bias = 0;
     
-    private Runnable[] initActions = new Runnable[3];
+    protected Runnable[] initActions = new Runnable[3];
     /**
      * 
      * @param vis screen to act on
@@ -71,6 +71,8 @@ public abstract class RRTHelperBase implements RRTBase{
         }
         
         runAction();
+
+        
     }
 
     protected abstract void runAction();
@@ -139,7 +141,7 @@ public abstract class RRTHelperBase implements RRTBase{
         return nearbyNodes;
     }
 
-    private double calculateRadius() {
+    protected double calculateRadius() {
         return 100;
     }
 
@@ -170,11 +172,11 @@ public abstract class RRTHelperBase implements RRTBase{
         drawing.getArray().addAll(obstacles);
     }
 
-    public  void addObstacles(List<Obstacle> obstacles){
+    public void addObstacles(List<Obstacle> obstacles){
 
     }
 
-    public  void removeObstacles(List<Obstacle> obstacles){
+    public void removeObstacles(List<Obstacle> obstacles){
         
     }
 
@@ -248,11 +250,11 @@ public abstract class RRTHelperBase implements RRTBase{
         return List.copyOf(nodes.toList());
     }
 
-    public Vector2D getStart(){
+    public Node getStart(){
         return start;
     }
 
-    public Vector2D getGoal(){
+    public Node getGoal(){
         return goal;
     }
 

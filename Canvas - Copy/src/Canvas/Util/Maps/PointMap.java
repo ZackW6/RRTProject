@@ -61,7 +61,7 @@ public class PointMap <T extends Point> implements PointBase<T> {
     @Override
     public <V extends Point> List<T> findInRange(V lowerBound, V upperBound) {
         List<T> result = new ArrayList<>();
-        for (T p : points) {
+        for (T p : List.copyOf(points)) {
             if (p.getX() >= lowerBound.getX() && p.getX() <= upperBound.getX() &&
                 p.getY() >= lowerBound.getY() && p.getY() <= upperBound.getY()) {
                 result.add(p);
@@ -86,6 +86,7 @@ public class PointMap <T extends Point> implements PointBase<T> {
                 drawing.remove(((DrawingAccessable)p).getObj());
             }
         }
+        clear();
     }
     @Override
     public void clear(VisualJ vis) {
@@ -94,6 +95,7 @@ public class PointMap <T extends Point> implements PointBase<T> {
                 vis.remove(((DrawingAccessable)p).getObj());
             }
         }
+        clear();
     }
     @Override
     public T getRoot() {

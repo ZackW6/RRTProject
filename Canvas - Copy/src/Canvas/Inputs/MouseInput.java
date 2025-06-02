@@ -18,6 +18,7 @@ public class MouseInput{
     public double mouseWheel = 0;
     public boolean leftPressed = false;
     public boolean rightPressed = false;
+    public boolean middlePressed = false;
 
     private VisualJ vis;
     public enum MouseInputs {
@@ -38,6 +39,7 @@ public class MouseInput{
         }
     }
     public enum MouseSide {
+        MIDDLE(2),
         RIGHT(1),
         LEFT(0);
         private int val;
@@ -49,7 +51,7 @@ public class MouseInput{
         }
     }
     @SuppressWarnings("unchecked")
-    private ArrayList<Runnable>[][] events = new ArrayList[2][8];
+    private ArrayList<Runnable>[][] events = new ArrayList[3][8];
     
     /**
      * Mouse side should be left for any that are not intended to moniter clicks
@@ -57,16 +59,16 @@ public class MouseInput{
      * @param typeOfListener
      * @param rightOrLeft
      */
-    public void addEvent(Runnable run, MouseInputs typeOfListener, MouseSide rightOrLeft){
-        events[rightOrLeft.get()][typeOfListener.get()].add(run);
+    public void addEvent(Runnable run, MouseInputs typeOfListener, MouseSide side){
+        events[side.get()][typeOfListener.get()].add(run);
     }
 
-    public ArrayList<Runnable> getEventList(MouseInputs typeOfListener, MouseSide rightOrLeft){
-        return events[rightOrLeft.get()][typeOfListener.get()];
+    public ArrayList<Runnable> getEventList(MouseInputs typeOfListener, MouseSide side){
+        return events[side.get()][typeOfListener.get()];
     }
 
-    public void removeEvent(Runnable run, MouseInputs typeOfListener, MouseSide rightOrLeft){
-        events[rightOrLeft.get()][typeOfListener.get()].remove(run);
+    public void removeEvent(Runnable run, MouseInputs typeOfListener, MouseSide side){
+        events[side.get()][typeOfListener.get()].remove(run);
     }
 
     public MouseInput(VisualJ canvas){
@@ -81,13 +83,19 @@ public class MouseInput{
             public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     leftPressed = true;
-                    for (Runnable run : events[0][0].toArray(new Runnable[events[0][0].size()])){
+                    for (Runnable run : events[0][0]){
                         run.run();
                     }
                 }
                 if (SwingUtilities.isRightMouseButton(e)) {
                     rightPressed = true;
-                    for (Runnable run : events[1][0].toArray(new Runnable[events[1][0].size()])){
+                    for (Runnable run : events[1][0]){
+                        run.run();
+                    }
+                }
+                if (SwingUtilities.isMiddleMouseButton(e)) {
+                    middlePressed = true;
+                    for (Runnable run : events[2][0]){
                         run.run();
                     }
                 }
@@ -96,13 +104,19 @@ public class MouseInput{
             public void mouseReleased(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     leftPressed = false;
-                    for (Runnable run : events[0][1].toArray(new Runnable[events[0][1].size()])){
+                    for (Runnable run : events[0][1]){
                         run.run();
                     }
                 }
                 if (SwingUtilities.isRightMouseButton(e)) {
                     rightPressed = false;
-                    for (Runnable run : events[1][1].toArray(new Runnable[events[1][1].size()])){
+                    for (Runnable run : events[1][1]){
+                        run.run();
+                    }
+                }
+                if (SwingUtilities.isMiddleMouseButton(e)) {
+                    middlePressed = false;
+                    for (Runnable run : events[2][1]){
                         run.run();
                     }
                 }
@@ -110,32 +124,37 @@ public class MouseInput{
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
-                    for (Runnable run : events[0][2].toArray(new Runnable[events[0][2].size()])){
+                    for (Runnable run : events[0][2]){
                         run.run();
                     }
                 }
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    for (Runnable run : events[1][2].toArray(new Runnable[events[1][2].size()])){
+                    for (Runnable run : events[1][2]){
+                        run.run();
+                    }
+                }
+                if (SwingUtilities.isMiddleMouseButton(e)) {
+                    for (Runnable run : events[2][2]){
                         run.run();
                     }
                 }
             }
             @Override
             public void mouseEntered(MouseEvent e) {
-                for (Runnable run : events[0][3].toArray(new Runnable[events[0][3].size()])){
+                for (Runnable run : events[0][3]){
                     run.run();
                 }
             }
             @Override
             public void mouseExited(MouseEvent e) {
-                for (Runnable run : events[0][4].toArray(new Runnable[events[0][4].size()])){
+                for (Runnable run : events[0][4]){
                     run.run();
                 }
             }
             @Override
             public void mouseWheelMoved(MouseWheelEvent e){
                 mouseWheel = e.getPreciseWheelRotation();
-                for (Runnable run : events[0][5].toArray(new Runnable[events[0][5].size()])){
+                for (Runnable run : events[0][5]){
                     run.run();
                 }
             }
@@ -144,7 +163,7 @@ public class MouseInput{
             @Override
             public void mouseWheelMoved(MouseWheelEvent e){
                 mouseWheel = e.getPreciseWheelRotation();
-                for (Runnable run : events[0][5].toArray(new Runnable[events[0][5].size()])){
+                for (Runnable run : events[0][5]){
                     run.run();
                 }
             }
@@ -156,12 +175,17 @@ public class MouseInput{
                 mouseCoords.y = e.getY();
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     
-                    for (Runnable run : events[0][6].toArray(new Runnable[events[0][6].size()])){
+                    for (Runnable run : events[0][6]){
                         run.run();
                     }
                 }
                 if (SwingUtilities.isRightMouseButton(e)) {
                     for (Runnable run : events[1][6]){
+                        run.run();
+                    }
+                }
+                if (SwingUtilities.isMiddleMouseButton(e)) {
+                    for (Runnable run : events[2][6]){
                         run.run();
                     }
                 }

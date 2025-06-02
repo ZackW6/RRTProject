@@ -3,6 +3,7 @@ package Canvas.Pathing.RRT;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.function.ToDoubleFunction;
 
+import Canvas.Commands.InstantCommand;
 import Canvas.Shapes.Circle;
 import Canvas.Shapes.PolyShape;
 import Canvas.Shapes.VisualJ;
@@ -32,8 +34,40 @@ public class RRTStar extends RRTHelperBase {
         this.vis = vis;
     }
 
+    InstantCommand reRouteCommand = new InstantCommand(()->{});
+
+
+    @Override
+    public void process(){
+        obstacleMaxBoundsCalculation();
+        for (int i = 0; i < initActions.length; i++){
+            initActions[i].run();
+            initActions[i] = ()->{};
+        }
+        
+        runAction();
+    }
+
+    private Node lastGoal = goal;
+
     @Override
     protected void runAction() {
+
+        
+        if (reRouteCommand.isRunning()){
+            return;
+        }else if (reRouteThread != null){
+            System.out.println("CONT");
+            reRouteCommand = new InstantCommand(reRouteThread);
+            reRouteCommand.schedule();
+            reRouteThread = null;
+            return;
+        }
+
+        if (goal.getParent() == null || lastGoal == null || lastGoal.x != goal.x || lastGoal.y != goal.y){
+            setGoalProcess();
+        }
+
         Node randomPoint = getRandomPoint(getBias());
         Node nearestPoint = getNearestPoint(randomPoint);
         Node newPoint = getNewPoint(randomPoint, nearestPoint);
@@ -85,8 +119,13 @@ public class RRTStar extends RRTHelperBase {
 
         double cost = goal.getCost();
 
-        if (goal.getParent() == null){
+        if (!goal.isDescendedOf(start) || collidesObstacle(goal, goal) || collidesObstacle(start, start)){
+            if (paths.size()>0){
+                drawing.remove(paths.get(0));
+                paths.clear();
+            }
             cost = Double.POSITIVE_INFINITY;
+            return;
         }
 
         if (cost < bestCost){
@@ -98,8 +137,6 @@ public class RRTStar extends RRTHelperBase {
             paths.add(getPath(this.goal));
             drawing.add(paths.get(0));
         }
-            
-        
 
         if (paths.size() > 0){
             drawing.moveIndex(paths.get(0),drawing.getArray().size()-3);
@@ -108,7 +145,7 @@ public class RRTStar extends RRTHelperBase {
         drawing.moveIndex(goal.getCircle(),drawing.getArray().size()-1);
         drawing.moveIndex(start.getCircle(),drawing.getArray().size()-2);
         // capNodeCount(1000);
-        prune(10000);
+        prune(5000);
     }
 
     public boolean isFinished() {
@@ -118,7 +155,11 @@ public class RRTStar extends RRTHelperBase {
     @Override
     public  void setGoal(Vector2D goal){
         bestCost = Double.POSITIVE_INFINITY;
+        this.goal.setParent(null);
         this.goal.setPosition(goal.x, goal.y);
+    }
+
+    public void setGoalProcess(){
         for (Node node : getNearbyNodes(this.goal)){
             double potentialCost = node.getCost() + node.distanceTo(goal);
             if (potentialCost < bestCost && !collidesObstacle(node, this.goal)){
@@ -147,43 +188,76 @@ public class RRTStar extends RRTHelperBase {
         }
     }
 
+    Runnable reRouteThread;
+
     @Override
     public void setStart(Vector2D start) {
         this.start.getCost();
         this.start.setPosition(start.x, start.y);
-        // Node newParent = new Node(this.start);
-        // nodes.add(newParent);
-        // newParent.getCost();
-        // newParent.getCircle().setColor(Color.RED);
-        // drawing.add(newParent.getCircle());
-        // this.start.abandon();
+
+        setGoalProcess();
         
-        // for (Node child : children){
-        //     this.start.removeChild(child);
-        //     killAll(child);
-        //     drawing.remove(child.getCircle());
-        //     nodes.remove(child);
-        // }
-        ArrayList<Node> children = new ArrayList<>();
-        ArrayList<Node> toFix = new ArrayList<>();
-        for (Node nearbyNode : nodes.toList()) {
-            if (!nearbyNode.equals(this.start) && !collidesObstacle(this.start, nearbyNode)){
-                children.add(nearbyNode);
-                nearbyNode.setParent(this.start);
-            }else{
-                nearbyNode.setParent(null);
-                toFix.add(nearbyNode);
+        reRouteThread = ()->{
+            if (collidesObstacle(this.start, this.start)){
+                return;
+            }
+            ArrayList<Node> children = new ArrayList<>();
+            ArrayList<Node> toFix = new ArrayList<>();
+            nodes.traverseNodes((node)->{
+                node.setParent(null);
+                toFix.add(node);
+            });
+
+            for (Node nearbyNode : getNearbyNodes(this.start, 25)) {
+                if (!nearbyNode.equals(this.start) && !collidesObstacle(this.start, nearbyNode)){
+                    children.add(nearbyNode);
+                    nearbyNode.setParent(this.start);
+                }
+            }
+            if (children.size() == 0){
+                return;
+            }
+
+            reRoute(children, toFix, -1);
+            bestCost = Double.POSITIVE_INFINITY;
+            setGoalProcess();
+        };
+    }
+
+    @Override
+    public void addObstacles(List<Obstacle> obstacles) {
+        addObstacle(obstacles.get(0));
+        drawing.getArray().addAll(obstacles);
+        // TODO Auto-generated method stub
+        setStart(start);
+    }
+
+    public void addObstacle(Obstacle obstacle){
+        obstacles.add(obstacle);
+        for (Node node : getNearbyNodes(new Node(obstacle.getCoords()))){
+            if (collidesObstacle(node, node)){
+                nodes.remove(node);
+                drawing.remove(node.getCircle());
             }
         }
-        reRoute(children, toFix, -1);
+    }
+
+    @Override
+    public void removeObstacles(List<Obstacle> obstacles) {
+        this.obstacles.removeAll(obstacles);
+        drawing.getArray().removeAll(obstacles);
+        setStart(start);
     }
 
     public void reRoute(List<Node> children, List<Node> toFix, int lastAmount){
         
+        if (children.size() == 0){
+            return;
+        }
         int newAmount = toFix.size();
         if (lastAmount == newAmount){
             for (Node n : toFix){
-                if (n.equals(start)){
+                if (n.equals(start) || n.equals(goal)){
                     continue;
                 }
                 drawing.remove(n.getObj());
@@ -191,30 +265,30 @@ public class RRTStar extends RRTHelperBase {
             }
             return;
         }
-        if (children.size() == 0){
-            return;
-        }
         
         HashMap<Node, Integer> newChildren = new HashMap<>();
         for (Node child : children){
+            
+            if (child.equals(goal)){
+                continue;
+            }
             double childCost = child.getCost();
             for (Node near : getNearbyNodes(child)){
-
-                if (near.equals(child) || collidesObstacle(child, near)){
+                if (near.equals(child) || near.equals(goal)){
                     continue;
                 }
-
-                if (near.getParent() == null){
-                    newChildren.put(near, 0);
-                }
                 
-                toFix.remove(near);
-                if (childCost + near.distanceTo(child) < near.getStoredCost()){
+                if (childCost + near.distanceTo(child) < near.getStoredCost() && !collidesObstacle(child, near)){
+                    if (near.getParent() == null){
+                        newChildren.put(near, 0);
+                    }
                     near.setParent(child);
-                }else if(near.distanceTo(child) + (near.getStoredCost() == Double.MAX_VALUE ? childCost : Double.MAX_VALUE) < childCost){
+                }else if(near.distanceTo(child) + (near.getStoredCost() == Double.MAX_VALUE ? childCost : Double.MAX_VALUE) < childCost && !collidesObstacle(child, near)){
                     child.setParent(near);
+                }else{
+                    continue;
                 }
-                
+                toFix.remove(near);
             }
         }
         
@@ -306,12 +380,18 @@ public class RRTStar extends RRTHelperBase {
     @Override
     public void prune(int max) {
         List<Node> list = nodes.toList();
+        list.remove(start);
+        list.remove(goal);
         if (list.size() > max) {
             // Sort nodes by total cost (cost to reach the node + estimated cost to goal)
-            list.sort(Comparator.comparingDouble(node -> node.getStoredCost() + node.distanceTo(goal)));
-    
+            Collections.shuffle(list);
             // Prune nodes exceeding the limit
             while (list.size() > max) {
+                if (goal.getParent() != null && goal.isDescendedOf(list.get(list.size() - 1))){
+                    list.remove(list.size() - 1);
+                    continue;
+                }
+
                 drawing.remove(list.get(list.size() - 1).getCircle());
                 
                 nodes.remove(list.get(list.size() - 1));

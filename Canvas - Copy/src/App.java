@@ -9,11 +9,13 @@ import Canvas.Pathing.RRT.BetterPreloadRRT;
 import Canvas.Pathing.RRT.InformedRRTStar;
 import Canvas.Pathing.RRT.MomentumRRT;
 import Canvas.Pathing.RRT.Obstacle;
+import Canvas.Pathing.RRT.PathFollower;
 import Canvas.Pathing.RRT.RRT;
 import Canvas.Pathing.RRT.RRTBase;
 import Canvas.Pathing.RRT.RRTContainer;
 import Canvas.Pathing.RRT.RRTHelperBase.Field;
 import Canvas.Pathing.RRT.RRTStar;
+import Canvas.Shapes.Rectangle;
 import Canvas.Shapes.Text;
 import Canvas.Shapes.VisualJ;
 import Canvas.Util.Profile;
@@ -43,6 +45,8 @@ public class App {
     public static RRTContainer rrtContainer = new RRTContainer();
 
     public static int state = 0;
+
+    public static PathFollower follower = new PathFollower(200, 200, 30, 30, Color.MAGENTA, true);
 
     
     public static void main(String[] args) {
@@ -77,6 +81,7 @@ public class App {
         // rrt.setDrawingCoords(0,0);
         // rrt.scheduleGoal(Vector2D.of(1000,300));
 
+        vis.add(follower);
 
         TimedCommand timedCommand1 = new TimedCommand(()->{
             try {
@@ -86,7 +91,24 @@ public class App {
             }
             
         }, 0);
+
         timedCommand1.schedule();
+        follower.disable(true);
+        TimedCommand followerCommand = new TimedCommand(()->{
+            try {
+                if (follower.isDisabled()){
+                    return;
+                }
+                vis.moveIndex(follower, vis.getObjArray().size()-1);
+                follower.acceptVector(rrtContainer.contained.getGoal());
+                rrtContainer.contained.scheduleGoal(Vector2D.of(follower.getX(), follower.getY()));
+            } catch (Exception e) {
+                // TODO: handle exception
+            }
+            
+        }, 5);
+
+        followerCommand.schedule();
 
         keyboard.keyPressed("i").onTrue(Commands.runOnce(()->{
             rrtContainer.contained.scheduleObstacles(fileParser.loadSquares(rrtContainer.contained, "AvoidStage"));
@@ -112,6 +134,13 @@ public class App {
         keyboard.keyPressed("s").onTrue(Commands.runOnce(()->{
             if (rrtContainer.contained instanceof BetterPreloadRRT){
                 ((BetterPreloadRRT)rrtContainer.contained).removeLastDynamic();
+            }else{
+                try {
+                    rrtContainer.contained.removeObstacles(List.of(rrtContainer.contained.getObstacles().get(rrtContainer.contained.getObstacles().size()-1)));
+                } catch (Exception e) {
+                    // TODO: handle exception
+                }
+                
             }
             // rrtContainer.contained.removeObstacles(List.of(rrtContainer.contained.getObstacles().get(0)));
         }));
@@ -139,8 +168,10 @@ public class App {
         // mouse.addEvent(()->{
         //     typeButton.isClicked(mouse.getMouseCoords(),vis);
         // },MouseInputs.MOUSE_PRESSED, MouseSide.LEFT);
-        
-        
+        keyboard.keyPressed("Up").whileTrue(Commands.runOnce(()->vis.moveFrame(0,-2.5/vis.getZoom())),5);
+        keyboard.keyPressed("Down").whileTrue(Commands.runOnce(()->vis.moveFrame(0,2.5/vis.getZoom())),5);
+        keyboard.keyPressed("Left").whileTrue(Commands.runOnce(()->vis.moveFrame(2.5/vis.getZoom(),0)),5);
+        keyboard.keyPressed("Right").whileTrue(Commands.runOnce(()->vis.moveFrame(-2.5/vis.getZoom(),0)),5);
 
         mouse.addEvent(()->{
             if (mouse.getMouseWheelPosition() < 0){
@@ -165,9 +196,12 @@ public class App {
                 mouseHelperLeft.hasReleased = false;
                 mouseHelperLeft.startFrameMove = vis.getFrameMove();
             }
-            rrtContainer.contained.scheduleGoal(Vector2D.of(mouseHelperLeft.startMarkCoords.x-(mouseHelperLeft.mouseMarkCoords.x-mouse.getMouseCoords().x + (vis.getFrameMove().x - mouseHelperLeft.startFrameMove.x))*1/vis.getZoom()
-                ,mouseHelperLeft.startMarkCoords.y-(mouseHelperLeft.mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom()));
-            // vis.setFrame(startMarkCoords.x-(mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),startMarkCoords.y-(mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom());
+            Vector2D newPosition = Vector2D.of(mouseHelperLeft.startMarkCoords.x-(mouseHelperLeft.mouseMarkCoords.x-mouse.getMouseCoords().x + (vis.getFrameMove().x - mouseHelperLeft.startFrameMove.x))*1/vis.getZoom()
+            ,mouseHelperLeft.startMarkCoords.y-(mouseHelperLeft.mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom());
+
+            rrtContainer.contained.scheduleGoal(newPosition);
+            follower.setPosition(newPosition, follower.getRotation());
+                // vis.setFrame(startMarkCoords.x-(mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),startMarkCoords.y-(mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom());
         },MouseInputs.MOUSE_DRAGGED, MouseSide.LEFT);
 
         MouseMovingHelper mouseHelperRight = new MouseMovingHelper();
@@ -185,6 +219,21 @@ public class App {
             // vis.setFrame(startMarkCoords.x-(mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),startMarkCoords.y-(mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom());
             // vis.setZoom(mouse.getMouseCoords().y/1000);
         },MouseInputs.MOUSE_DRAGGED, MouseSide.RIGHT);
+
+        MouseMovingHelper mouseHelperMiddle = new MouseMovingHelper();
+        mouse.addEvent(()->{
+            mouseHelperMiddle.hasReleased = true;
+        },MouseInputs.MOUSE_RELEASED, MouseSide.MIDDLE);
+
+        mouse.addEvent(()->{
+            if (mouseHelperMiddle.hasReleased){
+                mouseHelperMiddle.mouseMarkCoords = mouse.getMouseCoords();
+                mouseHelperMiddle.startMarkCoords = vis.getFrameMove();
+                mouseHelperMiddle.hasReleased = false;
+            }
+            vis.setFrame(mouseHelperMiddle.startMarkCoords.x-(mouseHelperMiddle.mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),mouseHelperMiddle.startMarkCoords.y-(mouseHelperMiddle.mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom());
+            // vis.setZoom(mouse.getMouseCoords().y/1000);
+        },MouseInputs.MOUSE_DRAGGED, MouseSide.MIDDLE);
         
         // mouse.addEvent(()->{
         //     if (hasReleased){
@@ -202,7 +251,8 @@ public class App {
     }
 
     public static void acknowledgeState(){
-        List<Obstacle> obstacles1 = rrtContainer.contained.getObstacles();
+        FileParser fileParser = new FileParser("Canvas - Copy/src/Canvas/FileUtil/");
+        List<Obstacle> obstacles = fileParser.loadSquares(new RRT(vis, new Field(0, 0, 1700, 900)), "navgrid");
         Vector2D goal = rrtContainer.contained.getGoal();
         Vector2D start = rrtContainer.contained.getStart();
         rrtContainer.contained.delete();
@@ -220,9 +270,18 @@ public class App {
                 rrtContainer.contained = new BetterPreloadRRT(vis, new Field(0, 0, 1700, 900), new ArrayList<>());
                 break;
             case 4:
-                rrtContainer.contained = new MomentumRRT(vis, new Field(0, 0, 1700, 900));
+                follower.disable(false);
+                rrtContainer.contained = new RRTStar(vis, new Field(0, 0, 1700, 900));
                 break;
             case 5:
+                follower.disable(false);
+                rrtContainer.contained = new BetterPreloadRRT(vis, new Field(0, 0, 1700, 900), new ArrayList<>());
+                break;
+            case 6:
+                follower.disable(true);
+                rrtContainer.contained = new MomentumRRT(vis, new Field(0, 0, 1700, 900));
+                break;
+            case 7:
                 state = 0;
                 rrtContainer.contained = new RRT(vis, new Field(0, 0, 1700, 900));
                 break;
@@ -231,14 +290,12 @@ public class App {
                 break;
         }
         
-        rrtContainer.contained.scheduleObstacles(obstacles1);
+        rrtContainer.contained.scheduleObstacles(obstacles);
         rrtContainer.contained.scheduleStart(start);
         rrtContainer.contained.scheduleGoal(goal);
     }
 
     public static void defineShapes(VisualJ vis){
-        
-        
         // for (int i=0;i<1;i++){
         //     int x = 0;//Random.randInt(0, vis.WIDTH);
         //     int y = 0;//Random.randInt(0, vis.HEIGHT);

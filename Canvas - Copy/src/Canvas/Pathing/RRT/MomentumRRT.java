@@ -14,7 +14,7 @@ import Canvas.Shapes.PolyShape;
 import Canvas.Shapes.VisualJ;
 import Canvas.Util.Vector2D;
 
-public class MomentumRRT extends InformedRRTStar{
+public class MomentumRRT extends RRTStar{
 
     private PolyShape momentumDrawing;
 

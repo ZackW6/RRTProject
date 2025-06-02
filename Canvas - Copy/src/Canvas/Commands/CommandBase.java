@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public abstract class CommandBase {
 
     private ArrayList<Runnable> initRuns = new ArrayList<>();
-    private ArrayList<Runnable> afterRuns = new ArrayList<>();
+    private Runnable afterRun = ()->{};
 
     protected Thread thread = new Thread(()->{
         initialize();
@@ -16,9 +16,7 @@ public abstract class CommandBase {
             execute();
             if (isCanceled()){
                 finallyDo();
-                for (Runnable run : afterRuns){
-                    run.run();
-                }
+                afterRun.run();
                 break;
             }
         }
@@ -38,7 +36,7 @@ public abstract class CommandBase {
     }
 
     public CommandBase finallyDo(Runnable run){
-        afterRuns.add(run);
+        afterRun = run;
         return this;
     }
 
@@ -53,9 +51,7 @@ public abstract class CommandBase {
                 execute();
                 if (isCanceled()){
                     finallyDo();
-                    for (Runnable run : afterRuns){
-                        run.run();
-                    }
+                    afterRun.run();
                     break;
                 }
             }
@@ -75,9 +71,7 @@ public abstract class CommandBase {
             System.out.println("Failed");
             e.printStackTrace();
         }
-        for (Runnable run : afterRuns){
-            run.run();
-        }
+        afterRun.run();
         finallyDo();
     }
 

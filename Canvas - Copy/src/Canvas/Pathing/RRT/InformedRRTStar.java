@@ -2,6 +2,7 @@ package Canvas.Pathing.RRT;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import Canvas.Shapes.VisualJ;
@@ -56,6 +57,25 @@ public class InformedRRTStar extends RRTStar{
 
         // Return a new node within the ellipsoid
         return new Node(xFinal, yFinal);
+    }
+    
+    @Override
+    public void prune(int max) {
+        List<Node> list = nodes.toList();
+        list.remove(start);
+        list.remove(goal);
+        if (list.size() > max) {
+            // Sort nodes by total cost (cost to reach the node + estimated cost to goal)
+            list.sort(Comparator.comparingDouble(node -> node.getStoredCost() + node.distanceTo(goal)));
+    
+            // Prune nodes exceeding the limit
+            while (list.size() > max) {
+                drawing.remove(list.get(list.size() - 1).getCircle());
+                
+                nodes.remove(list.get(list.size() - 1));
+                list.remove(list.size() - 1);
+            }
+        }
     }
     
 }
