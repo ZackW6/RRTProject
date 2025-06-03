@@ -3,6 +3,7 @@ package Canvas.Util;
 import java.util.List;
 import java.util.TreeSet;
 
+@Deprecated
 public class RangeList<T extends Comparable<T>>{
     private final TreeSet<T> set = new TreeSet<>();
 

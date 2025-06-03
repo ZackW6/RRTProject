@@ -145,20 +145,38 @@ public class VisualJ extends JFrame{
         return timeStep;
     }
 
+    /**
+     * Move the frame a set number of pixels, is subject to zoom ratio
+     * @param x
+     * @param y
+     */
     public void moveFrame(double x, double y){
         moveScreen.x += x;
         moveScreen.y += y;
     }
 
+    /**
+     * Set the frame position to a specific coordinate, is subject to zoom ratio
+     * @param x
+     * @param y
+     */
     public void setFrame(double x, double y){
         moveScreen.x = x;
         moveScreen.y = y;
     }
 
+    /**
+     * Get where the frame is compared to origin, is subject to zoom ratio
+     * @return
+     */
     public Vector2D getFrameMove(){
         return Vector2D.of(moveScreen.x, moveScreen.y);
     }
 
+    /**
+     * Set how close or far the frame is from its contents (How wide it is, how much you can see)
+     * @param zoomRatio
+     */
     public void setZoom(double zoomRatio){
         this.zoomRatio = zoomRatio;
         if (this.zoomRatio < 0){
@@ -170,6 +188,12 @@ public class VisualJ extends JFrame{
         return zoomRatio;
     }
 
+    /**
+     * simple heirarchy for shapes to define when they should be rendered
+     * @param object
+     * @param index
+     * @return
+     */
     public boolean moveIndex(Obj object, int index){
         int currentIndex = shapes.indexOf(object);
         if (currentIndex==-1){
@@ -185,10 +209,19 @@ public class VisualJ extends JFrame{
         return shapes.indexOf(object);
     }
 
+    /**
+     * How long each frame takes to render
+     * @return
+     */
     public double getIterationTime(){
         return lastIterationTime;
     }
 
+    /**
+     * convert from standard pixels to zoom pixels
+     * @param point
+     * @return
+     */
     public Vector2D screenRelativePoint(Vector2D point){
         return Vector2D.of((point.x-WIDTH/2)*1/getZoom()+WIDTH/2 - getFrameMove().x,(point.y-HEIGHT/2)*1/getZoom()+HEIGHT/2 - getFrameMove().y);
     }

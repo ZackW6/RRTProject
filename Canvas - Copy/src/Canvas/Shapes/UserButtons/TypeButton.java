@@ -33,7 +33,7 @@ public class TypeButton extends PolyShape implements ClickableButton{
     public TypeButton(double X, double Y, double Width, double Height, Color Color, boolean tf, VisualJ receiver) {
         super(X, Y, List.of(new Rectangle(0, 0, Width, Height, Color, tf)));
         this.keyInput = new KeyInput(receiver);
-
+        // Work through what is currently stored in the keyInput, add it to the displayed string, and store the final as a list of strings
         this.addStringCommand = Commands.timed(()->{
             str = List.copyOf(keyInput.getCurrentGather());
             if (str.size() > lastListLength){
@@ -54,7 +54,7 @@ public class TypeButton extends PolyShape implements ClickableButton{
                     txt.setText(str.get(i-1));
                 }
             } catch (Exception e) {
-                //TODO I shouldn't need a try-catch, I should fix this, honestly the whole thing is rather stupid
+                //TODO I shouldn't need a try-catch, I should fix this, honestly the whole thing is rather stupid...
             }
             
             
@@ -79,6 +79,7 @@ public class TypeButton extends PolyShape implements ClickableButton{
         return List.copyOf(str);
     }
 
+    //Begin watching for characters
     @Override
     public void runOnClick(){
         if (str.size()>0){
@@ -91,6 +92,7 @@ public class TypeButton extends PolyShape implements ClickableButton{
         addStringCommand.schedule();
     }
 
+    //End watching for characters
     public void runOnNoClick(){
         addStringCommand.cancel();
         keyInput.endGatherAll();

@@ -11,6 +11,9 @@ import javax.swing.text.View;
 import Canvas.Util.ArrMath;
 import Canvas.Util.Vector2D;
 
+/**
+ * Base class for polygon shapes
+ */
 public abstract class Polygoni extends Obj{
 
     protected CopyOnWriteArrayList<Vector2D> points;
@@ -34,6 +37,10 @@ public abstract class Polygoni extends Obj{
         recheck(new CopyOnWriteArrayList<>(points.toArray(new Vector2D[points.size()])));
     }
 
+    /**
+     * Redefine what the dimensions of the polygon are with new points/changes
+     * @param points
+     */
     protected void recheck(List<Vector2D> points){
         this.points = (CopyOnWriteArrayList<Vector2D>) points;
         Vector2D dimensions = getDimensions(points);
@@ -43,6 +50,11 @@ public abstract class Polygoni extends Obj{
         this.height = dimensions.y;
     }
 
+    /**
+     * find the max x and y vals from a given set of points, adjusted for any negative
+     * @param points
+     * @return
+     */
     private Vector2D getDimensions(List<Vector2D> points){
         double greatx = points.get(0).x;
         double greaty = points.get(0).y;
@@ -67,6 +79,11 @@ public abstract class Polygoni extends Obj{
         return Vector2D.of(width, height);
     }
 
+    /**
+     * Find the center of the polygon
+     * @param points
+     * @return
+     */
     private Vector2D getTranslation(List<Vector2D> points){
         double greatx = points.get(0).x;
         double greaty = points.get(0).y;
@@ -91,6 +108,10 @@ public abstract class Polygoni extends Obj{
         return Vector2D.of(width, height);
     }
 
+    /**
+     * stored translation, rather than recalculate
+     * @return
+     */
     public Vector2D getTranslationVector(){
         return translationVector;
     }

@@ -113,6 +113,9 @@ public class Obstacle extends Rectangle implements ClickableButton, Point{
         return p.x >= this.getX() && p.x <= this.getX() + this.getWidth() && p.y >= this.getY() && p.y <= this.getY() + this.getHeight();
     }
 
+    /**
+     * May eventually be swappable by clicking, not yet
+     */
     @Override
     public void runOnClick() {
         

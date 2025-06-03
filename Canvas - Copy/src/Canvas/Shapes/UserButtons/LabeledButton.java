@@ -11,6 +11,17 @@ public class LabeledButton extends PolyShape implements ClickableButton{
 
     private Runnable run = ()->{};
     
+    /**
+     * Identical to ClickButton, but allows a label using polyshape
+     * @param X
+     * @param Y
+     * @param Width
+     * @param Height
+     * @param text
+     * @param buttonColor
+     * @param textColor
+     * @param tf
+     */
     public LabeledButton(double X, double Y, double Width, double Height, String text, Color buttonColor, Color textColor, boolean tf) {
         super(X, Y);
         this.add(new Rectangle(0, 0, Width, Height, buttonColor, tf));

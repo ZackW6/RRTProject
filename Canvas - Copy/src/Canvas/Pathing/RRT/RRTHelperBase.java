@@ -18,6 +18,9 @@ import Canvas.Util.Maps.KDTree;
 import Canvas.Util.Maps.PointBase;
 import Canvas.Util.Maps.PointMap;
 
+/**
+ * Helper class for the basics of most RRT's, contains all repeatable data, and handles background processes, such as the synchronizing of start and goal changes.
+ */
 public abstract class RRTHelperBase implements RRTBase{
     protected PointBase<Node> nodes = new PointMap<>();
     // protected ArrayList<Node> nodes = new ArrayList<>();
@@ -212,7 +215,7 @@ public abstract class RRTHelperBase implements RRTBase{
         drawing.add(this.goal.getCircle());
     }
 
-    public  void setGoal(Vector2D goal){
+    public void setGoal(Vector2D goal){
         
         if (drawing.indexOf(this.goal.getCircle())!=-1){
             drawing.remove(this.goal.getCircle());

@@ -250,6 +250,7 @@ public class App {
         // mouse.addEvent(()->keyboard.endGatherAll(),MouseInputs.MOUSE_CLICKED,MouseSide.RIGHT);
     }
 
+    //Simple state machine for display of each RRT
     public static void acknowledgeState(){
         FileParser fileParser = new FileParser("Canvas - Copy/src/Canvas/FileUtil/");
         List<Obstacle> obstacles = fileParser.loadSquares(new RRT(vis, new Field(0, 0, 1700, 900)), "navgrid");
@@ -286,6 +287,7 @@ public class App {
                 rrtContainer.contained = new RRT(vis, new Field(0, 0, 1700, 900));
                 break;
             default:
+                state = 0;
                 rrtContainer.contained = new RRT(vis, new Field(0, 0, 1700, 900));
                 break;
         }

@@ -14,7 +14,7 @@ public class PolyShape extends Obj{
 
     /**
      * This class takes in a list of other shapes, and uses their coords to orient the other shapes around
-     * the given coord origin, remember the coord origin is based in the top left of the shape.
+     * the given coord origin, remember the coord origin is based in the bottom left of the shape.
      * @param xcoord
      * @param ycoord
      * @param width
@@ -32,9 +32,11 @@ public class PolyShape extends Obj{
 
     public PolyShape(double xcoord, double ycoord) {
         super(xcoord, ycoord, 0, 0, Color.BLACK, false);
-
     }
 
+    /**
+     * Apply new dimensions because of a change to the shape
+     */
     private void reconfigure(){
         Vector2D dimensions = getDimensions(shapes);
 
@@ -44,6 +46,11 @@ public class PolyShape extends Obj{
         addedCoords.y = -height/2;
     }
 
+    /**
+     * Find the dimensions of the list of shapes
+     * @param shapes
+     * @return
+     */
     private static Vector2D getDimensions(List<Obj> shapes){
         if (shapes.size() <= 0){
             return Vector2D.of(0,0);
@@ -68,33 +75,6 @@ public class PolyShape extends Obj{
         }
         double width = greatx - leastx;
         double height = greaty - leasty;
-        return Vector2D.of(width, height);
-    }
-
-    private static Vector2D getTranslation(List<Obj> shapes){
-        if (shapes.size() <= 0){
-            return Vector2D.of(0,0);
-        }
-        double greatx = shapes.get(0).coords.x + shapes.get(0).width;
-        double greaty = shapes.get(0).coords.y + shapes.get(0).height;
-        double leastx = shapes.get(0).coords.x;
-        double leasty = shapes.get(0).coords.y;
-        for (int i = 1; i < shapes.size(); i++){
-            if (shapes.get(i).coords.x < leastx){
-                leastx = shapes.get(i).coords.x;
-            }
-            if (shapes.get(i).coords.x + shapes.get(i).width > greatx){
-                greatx = shapes.get(i).coords.x + shapes.get(i).width;
-            }
-            if (shapes.get(i).coords.y < leasty){
-                leasty = shapes.get(i).coords.y;
-            }
-            if (shapes.get(i).coords.y + shapes.get(i).height > greaty){
-                greaty = shapes.get(i).coords.y + shapes.get(i).height;
-            }
-        }
-        double width = (greatx + leastx)/2;
-        double height = (greaty + leasty)/2;
         return Vector2D.of(width, height);
     }
 
@@ -144,6 +124,12 @@ public class PolyShape extends Obj{
         reconfigure();
     }
 
+    /**
+     * simple heirarchy for shapes to define when they should be rendered
+     * @param object
+     * @param index
+     * @return
+     */
     public boolean moveIndex(Obj object, int index){
         if (object == null){
             return false;

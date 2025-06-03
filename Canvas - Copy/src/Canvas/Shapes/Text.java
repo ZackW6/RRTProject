@@ -93,6 +93,12 @@ public class Text extends Obj{
         return font;
     }
 
+    /**
+     * True font height is not exact to pixel height, so fixing calculations are done here
+     * @param desiredHeight
+     * @param font
+     * @return
+     */
     public static Font fixFontHeight(double desiredHeight, Font font){
         Font fixedFont = font;
         if ((int)desiredHeight > predictHeight(fixedFont)){

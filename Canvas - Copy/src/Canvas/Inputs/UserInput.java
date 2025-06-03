@@ -7,7 +7,7 @@ import java.util.Scanner;
 
 import javax.swing.SwingUtilities;
 /**
- * Class for all user input actions
+ * Class for simple scanner IO
  */
 public class UserInput {
     

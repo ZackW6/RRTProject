@@ -6,6 +6,7 @@ import java.util.List;
 import Canvas.Shapes.Rectangle;
 import Canvas.Util.Vector2D;
 
+//Base class for clickable buttons
 public class ClickButton extends Rectangle implements ClickableButton{
 
     private Runnable run = ()->{};

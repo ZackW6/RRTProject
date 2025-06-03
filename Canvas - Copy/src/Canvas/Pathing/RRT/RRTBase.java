@@ -63,6 +63,11 @@ public interface RRTBase {
 
     public double getBias();
 
+    /**
+     * Loop through a lineage of nodes to create a display of lines connecting each, return such
+     * @param nodePathEnd
+     * @return
+     */
     public default PolyShape getPath(Node nodePathEnd){
         Node activeNode = new Node(nodePathEnd);
         PolyShape poly = new PolyShape(0, 0);
@@ -80,23 +85,11 @@ public interface RRTBase {
         return poly;
     }
 
-    public default PolyShape getPath(List<Vector2D> nodes){
-        Vector2D activeNode = nodes.get(0);
-        PolyShape poly = new PolyShape(0, 0);
-        int i = 0;
-        while(nodes.get(i+1) != null && i <100){
-            poly.add(
-                new Line(activeNode.x + Math.min(nodes.get(i+1).x-activeNode.x,0), activeNode.y + Math.min(nodes.get(i+1).y-activeNode.y,0)
-                , List.of(Vector2D.of(0,0)
-                ,Vector2D.of(nodes.get(i+1).x-activeNode.x,nodes.get(i+1).y-activeNode.y))
-                , Color.RED, 3)
-            );
-            activeNode = nodes.get(i+1);
-            i++;
-        }
-        return poly;
-    }
-
+    /**
+     * find the viable corners of an obstacle
+     * @param obstacle
+     * @return
+     */
     public default List<Node> findCornerNodes(Obstacle obstacle){
         Vector2D corner1 = obstacle.getCoords();
         Vector2D corner2 = new Vector2D(corner1.x + obstacle.getWidth(), corner1.y);
@@ -123,6 +116,11 @@ public interface RRTBase {
         return workingNodes;
     }
 
+    /**
+     * Loop through closeby obstacles to the given point to see if it, and its parent collide with an obstacle
+     * @param point
+     * @return
+     */
     public default boolean collidesObstacle(Node point) {
         if (point.getParent() == null){
             System.out.println("INCORRECT USE OF OBSTACLES, CHECK RRTHelperBASE");
@@ -175,6 +173,7 @@ public interface RRTBase {
 
     public void obstacleMaxBoundsCalculation();
 
+    //If obstacles are given in a grid, they can be combined to adjacent neighbors for bigger obstacles, but less total
     public default List<Obstacle> simplifyObstacles(List<Obstacle> obstacles){
         if (obstacles.size() == 0){
             return List.of();

@@ -15,6 +15,11 @@ public class RRT extends RRTHelperBase{
 
     PolyShape path = null;
 
+    /**
+     * The most simple RRT, builds a path to the goal, but does not improve it
+     * @param vis
+     * @param field
+     */
     public RRT(VisualJ vis, Field field) {
         super(vis, field);
     }
@@ -45,6 +50,7 @@ public class RRT extends RRTHelperBase{
                 }
             }
         }
+        //Do not let the node amount exceed 100000, graphics becomes slower than 20ms at this amout
         prune(100000);
     }
 
@@ -52,6 +58,7 @@ public class RRT extends RRTHelperBase{
         return isFinished;
     }
 
+    //Move goal, look for parents closeby, but if none delete current displayed path
     @Override
     public  void setGoal(Vector2D goal){
         bestCost = Double.POSITIVE_INFINITY;
@@ -73,6 +80,7 @@ public class RRT extends RRTHelperBase{
         }
     }
 
+    //Reset with new obstacles
     @Override
     public  void setObstacles(List<Obstacle> obstacles) {
         super.setObstacles(obstacles);
@@ -84,6 +92,7 @@ public class RRT extends RRTHelperBase{
         }
     }
 
+    //Reset with new start, but look for close nodes of start to keep
     @Override
     public  void setStart(Vector2D start){
         goal.setParent(null);

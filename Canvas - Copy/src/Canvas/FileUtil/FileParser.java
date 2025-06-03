@@ -21,6 +21,13 @@ public class FileParser {
         this.path = temp.replace("\"","");
     }
 
+    /**
+     * actually parse the file from a json configuration, but in only a list of booleans, starting with some data about field width, height, etc...
+     * then apply this field of obstacles to the rrt.
+     * @param rrt
+     * @param fileName
+     * @return
+     */
     public List<Obstacle> loadSquares(RRTBase rrt, String fileName){
 
         FileWriter fileWriter = new FileWriter(path);

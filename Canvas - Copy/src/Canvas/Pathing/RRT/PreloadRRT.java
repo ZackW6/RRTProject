@@ -13,6 +13,7 @@ import Canvas.Shapes.VisualJ;
 import Canvas.Util.Vector2D;
 import Canvas.Util.Maps.KDTree;
 
+@Deprecated
 public class PreloadRRT implements RRTBase{
 
     KDTree<ModifiedNode> allNodes = new KDTree<ModifiedNode>();

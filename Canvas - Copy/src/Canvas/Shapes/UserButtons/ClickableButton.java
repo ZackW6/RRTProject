@@ -6,6 +6,7 @@ import Canvas.Shapes.Rectangle;
 import Canvas.Shapes.VisualJ;
 import Canvas.Util.Vector2D;
 
+//Base interface for clickable buttons
 public interface ClickableButton{
 
     public abstract void runOnClick();
@@ -14,6 +15,7 @@ public interface ClickableButton{
 
     public abstract Vector2D getDimensions();
 
+    //Check if clicked by supplying the clicked point position.
     public default boolean isClicked(Vector2D point, VisualJ vis){
         double zoom = vis.getZoom();
 

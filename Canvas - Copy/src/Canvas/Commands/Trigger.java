@@ -10,9 +10,9 @@ public class Trigger {
         this.supplier = supplier;
     }
 
-    private class BoolClass{
+    private class MutBool{
         private boolean bool;
-        private BoolClass(boolean init){
+        private MutBool(boolean init){
             bool = init;
         }
         private void set(boolean bool){
@@ -25,7 +25,7 @@ public class Trigger {
 
     public Trigger onTrue(CommandBase runner){
         commands.add(runner);
-        BoolClass wasOn = new BoolClass(false);
+        MutBool wasOn = new MutBool(false);
         Runnable checker = ()->{
             if (supplier.getAsBoolean()){
                 if (!wasOn.getBoolean() && !runner.isRunning()){
@@ -50,7 +50,7 @@ public class Trigger {
 
     public Trigger onFalse(CommandBase runner){
         commands.add(runner);
-        BoolClass wasOn = new BoolClass(true);
+        MutBool wasOn = new MutBool(true);
         Runnable checker = ()->{
             if (!supplier.getAsBoolean()){
                 if (!wasOn.getBoolean() && !runner.isRunning()){

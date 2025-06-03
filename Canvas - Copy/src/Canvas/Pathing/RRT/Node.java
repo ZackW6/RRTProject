@@ -84,6 +84,11 @@ public class Node extends Vector2D implements DrawingAccessable{
         this.cost = cost;
     }
 
+    /**
+     * whether the node, in any of its lineage, has a relative of this node
+     * @param possibleParent
+     * @return
+     */
     public boolean isDescendedOf(Node possibleParent){
         if (this.equals(possibleParent)){
             return true;
@@ -116,9 +121,7 @@ public class Node extends Vector2D implements DrawingAccessable{
         return getCircle();
     }
     /**
-     * Much more accurate than taking cost directly, needs to be run
-     * in certain cases the cost may have been calculated already which is
-     * the only reason to use the previous method
+     * Much more accurate than taking stored cost, but being run constantly is expensive, so the most recent calculation is stored in "getStoredCost()"
      *  */ 
     public double getCost(){
         double cost = 0;

@@ -47,11 +47,13 @@ public class KeyInput implements KeyListener {
         // Invoked when a physical key is pressed down. Uses KeyCode, an int
         // System.out.println("Key Pressed: " + KeyEvent.getKeyText(e.getKeyCode()));
         for (int i  = 0; i < pressedKeys[0].size(); i++){
+            //Fix key list of pressed keys
             if (KeyEvent.getKeyText(e.getKeyCode()).equals(pressedKeys[0].get(i)) || String.valueOf(e.getKeyChar()).equals(pressedKeys[0].get(i))){
                 pressedKeys[1].set(i, true);
                 break;
             }
         }
+        //Run specialized keys such as paste, backspace, and enter, as they have to do with writing to a list
         if (isGathering){
             if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
                 ctrlPressed = true;
@@ -105,6 +107,7 @@ public class KeyInput implements KeyListener {
         // Invoked when a physical key is released.
         // System.out.println("Key Released: " + KeyEvent.getKeyText(e.getKeyCode()));
         for (int i  = 0; i < pressedKeys[0].size(); i++){
+            //Fix key list for released keys
             if (KeyEvent.getKeyText(e.getKeyCode()).equals(pressedKeys[0].get(i)) || String.valueOf(e.getKeyChar()).equals(pressedKeys[0].get(i))){
                 pressedKeys[1].set(i, false);
                 break;

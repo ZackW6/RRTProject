@@ -3,7 +3,7 @@ package Canvas.Commands;
 import Canvas.Util.Profile;
 
 /**
- * Command class is a timer/thread mix, will atempt to match time allotted but if process takes too long will just run with 0 intended delay
+ * timer/thread mix, will atempt to match time allotted but if process takes too long will just run with 0 intended delay
  */
 public class TimedCommand extends Command{
 

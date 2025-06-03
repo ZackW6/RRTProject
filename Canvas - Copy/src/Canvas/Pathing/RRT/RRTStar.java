@@ -29,13 +29,17 @@ public class RRTStar extends RRTHelperBase {
     protected VisualJ vis;
     List<PolyShape> paths = new ArrayList<>();
 
+    /**
+     * RRT which expands to find the goal, and then continues to improve cost
+     * @param vis
+     * @param field
+     */
     public RRTStar(VisualJ vis, Field field) {
         super(vis, field);
         this.vis = vis;
     }
 
     InstantCommand reRouteCommand = new InstantCommand(()->{});
-
 
     @Override
     public void process(){
@@ -53,7 +57,8 @@ public class RRTStar extends RRTHelperBase {
     @Override
     protected void runAction() {
 
-        
+        //This is the synchronous running of a reroute, which can take a significant amount of time, on a thread.
+        //This allows the user to keep making changes, which will eventually be upheld when this command finishes.
         if (reRouteCommand.isRunning()){
             return;
         }else if (reRouteThread != null){

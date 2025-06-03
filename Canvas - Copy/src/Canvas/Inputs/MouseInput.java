@@ -71,6 +71,11 @@ public class MouseInput{
         events[side.get()][typeOfListener.get()].remove(run);
     }
 
+    /**
+     * starts checks whenever any event triggers on mouse presses, movements, drags, etc...
+     * any corrosponding Runnables are run
+     * @param canvas
+     */
     public MouseInput(VisualJ canvas){
         this.vis = canvas;
         for (int i = 0; i<events.length;i++){
@@ -221,12 +226,20 @@ public class MouseInput{
         return rightPressed;
     }
 
+    public boolean isMiddleMousePressed(){
+        return rightPressed;
+    }
+
     public Trigger leftPressed(){
         return new Trigger(()->isLeftMousePressed());
     }
 
     public Trigger rightPressed(){
         return new Trigger(()->isRightMousePressed());
+    }
+
+    public Trigger middlePressed(){
+        return new Trigger(()->isMiddleMousePressed());
     }
 }
 

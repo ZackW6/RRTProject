@@ -28,6 +28,7 @@ public class PathFollower extends Rectangle implements Point{
     //milliseconds
     private long lastTime = 0;
 
+    //Front marker
     private final Rectangle front;
 
     private boolean disabled = false;
@@ -58,19 +59,34 @@ public class PathFollower extends Rectangle implements Point{
         applyPosition(vec, rotation);
     }
 
+    /**
+     * meters per second
+     * @param max
+     */
     public void setMaxVelocity(double max){
         maxVelocity = max;
     }
-
+    /**
+     * meters per second per second
+     * @param max
+     */
     public void setMaxAcceleration(double max){
         maxAcceleration = max;
     }
 
+    /**
+     * degrees per second
+     * @param max
+     */
     public void setMaxRotationSpeed(double max){
         maxRotationSpeed = max;
     }
 
-    
+    /**
+     * Should be run in a main loop, respect time passed and will attempt to follow momentum that may be seen in real life.
+     * This is the simulated version of an input for the tractor or other such follower, in this case only forward motion.
+     * @param goalNode
+     */
     public void acceptVector(Node goalNode){
         if (disabled){
             return;
@@ -89,7 +105,7 @@ public class PathFollower extends Rectangle implements Point{
         targetRotation = rotation;
         yaw = correctRotation(yaw);
         double wantedRotChange = wantedChange(yaw, rotation);
-        System.out.println(yaw+"    "+rotation+"   "+wantedRotChange+"   "+goalNode.distanceTo(goalNode.parent));
+
         yaw += clamp(wantedRotChange, -maxRotationSpeed * timeChange, maxRotationSpeed * timeChange);
 
         targetVelocity = Math.abs(Math.pow(Math.cos(Math.toRadians(wantedRotChange)),10))*maxVelocity * timeChange;
@@ -126,6 +142,11 @@ public class PathFollower extends Rectangle implements Point{
         return change;
     }
 
+    /**
+     * safely apply position and rotation to the drawings as well
+     * @param pos
+     * @param yaw
+     */
     private void applyPosition(Vector2D pos, double yaw){
         if (disabled){
             return;

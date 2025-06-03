@@ -60,6 +60,7 @@ public class MomentumRRT extends RRTStar{
     public MomentumRRT(VisualJ vis, Field field) {
         super(vis, field);
         momentumDrawing = new PolyShape(0, 0);
+        //Threaded because the action of calculating the curves and drawing slows main thread of pathing significantly
         drawThread = new Command(()->{
             drawAction();
         }).finallyDo(()->{
@@ -68,6 +69,9 @@ public class MomentumRRT extends RRTStar{
         drawThread.schedule();
     }
 
+    /**
+     * Using given points of the InformedRRTStar, curve the path using bezier curves, and plot using circles
+     */
     protected void drawAction(){
 
         PolyShape other = new PolyShape(0, 0);

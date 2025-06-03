@@ -15,7 +15,7 @@ public class InformedRRTStar extends RRTStar{
     }
 
     /**
-     * In this case bias only affect initial goal search, not Informed optimization
+     * In this case bias only affects initial goal search, not Informed optimization
      */
     @Override
     public Node getRandomPoint(double bias) {
@@ -58,7 +58,7 @@ public class InformedRRTStar extends RRTStar{
         // Return a new node within the ellipsoid
         return new Node(xFinal, yFinal);
     }
-    
+
     @Override
     public void prune(int max) {
         List<Node> list = nodes.toList();
