@@ -18,11 +18,19 @@ Running:
   how they might fare.
 
 Controls:
-  Left Mouse Button: When dragged moves the goal;
-  Right Mouse Button: When dragged moves the start;
-  Middle Mouse Button: When dragged moves the view;
-  Space Bar: Goes to the next RRT;
-  R: Goes to the previuos RRT;
-  I, J, K, and L: Loads stored obstacles from a file onto the field;
-  A: Adds an obstalce on the cursor (Not in the base RRT);
-  S: Removes the most recent obstacle (Not in the base RRT);
+
+Left Mouse Button: When dragged moves the goal;
+
+Right Mouse Button: When dragged moves the start;
+
+Middle Mouse Button: When dragged moves the view;
+
+Space Bar: Goes to the next RRT;
+
+R: Goes to the previuos RRT;
+
+I, J, K, and L: Loads stored obstacles from a file onto the field;
+
+A: Adds an obstalce on the cursor (Not in the base RRT);
+
+S: Removes the most recent obstacle (Not in the base RRT);
